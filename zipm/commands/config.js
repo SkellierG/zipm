@@ -15,38 +15,48 @@ VERSION=0.0.1
 OS=LINUX
 CMD=DNF
 PATH=this/this/this`;
-
   }
 
   async read() {
-    const first = await this.readConfig()
-    let result = {};
-    first.forEach(entry => {
-       if (entry.type === 'entry') {
-        result[entry.key] = entry.value;
+      const { data: first, error: readError } = await this.readConfig();
+      if (readError) {
+        return { data: undefined, error: readError };
       }
-    })
-    return result;
+      
+      let result = {};
+      first.forEach(entry => {
+        if (entry.type === 'entry') {
+          result[entry.key] = entry.value;
+        }
+      });
+      return { data: result, error: undefined };
   }
 
   async write(data) {
-    const original = await this.readConfig();
-    const update = this.updateConfig(original, data);
-    const result = this.configToString(update);
-    return this.writeConfig(result);
+      const { data: original, error: readError } = await this.readConfig();
+      if (readError) {
+        return { data: undefined, error: readError };
+      }
+
+      const update = this.updateConfig(original, data);
+      const result = this.configToString(update);
+      return this.writeConfig(result);
   }
 
-  _init() {
-    return this.writeConfig(this.init);    
+  async _init() {
+    const written = await this.writeConfig(this.init);
+    if (written.error) {
+      return { data: undefined, error: written.error };
+    }
+    return { data: written.data, error: undefined };
   }
 
   async readConfig() {
     try {
-        const data = await fs.promises.readFile(this.fullpath, 'utf8');
-        return this.parseConfig(data);
+      const data = await fs.promises.readFile(this.fullpath, 'utf8');
+      return { data: this.parseConfig(data), error: undefined };
     } catch (err) {
-        console.error('Cannot read config file:', err);
-        return {}; // Return an empty object or handle the error as needed
+      return { data: undefined, error: err };
     }
   }
 
@@ -93,19 +103,19 @@ PATH=this/this/this`;
   writeConfig(data) {
     try {
       fs.promises.writeFile(this.fullpath, data,'utf8')
-      return { status: 'success' }
+      return { data: 'success', error: undefined }
     } catch(err) {
       console.log('cannot write config file', err);
-      return { status: 'failed' }
+      return { data: undefined, error: err }
     }
   }
 }
 
-//const persona = new ConfigFile;
+const persona = new ConfigFile;
 
-//console.log(persona._init());
-//console.log(await persona.read());
-//console.log(await persona.write({ os: 'arch' }));
+console.log(await persona._init());
+console.log(await persona.read());
+console.log(await persona.write({ os: 'arch' }));
 //console.log(persona);
 //console.log(await persona.readConfig());
 //console.log(persona.dir);

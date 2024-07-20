@@ -1,0 +1,27 @@
+[
+    {
+        "name": "GIT",
+        "cmd": ["git"],
+        "desc": "version controller"
+    },
+    {
+        "name": "RAR",
+        "cmd": ["rar"],
+        "desc": "compress files and directories into a .rar file"
+    },
+    {
+        "name": "UNRAR",
+        "cmd": ["unrar"],
+        "desc": "decompress .rar files"
+    },
+    {
+        "name": "7ZIP",
+        "cmd": ["zip"],
+        "desc": "compress and decompress .zip files"
+    },
+    {
+        "name": "GZIP",
+        "cmd": ["gzip"],
+        "desc": "compress and decompress .gz files"
+    }
+]

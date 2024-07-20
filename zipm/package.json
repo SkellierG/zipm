@@ -1,6 +1,6 @@
 {
   "name": "zipm",
-  "version": "0.0.1",
+  "version": "0.0.2-ALPHA",
   "description": "global compressor and uncompressor that uses rar, gzip, zip all in one command for comfort :3",
   "main": "main.js",
   "type": "module",
@@ -13,7 +13,7 @@
   },
   "keywords": ["cli", "zip", "gzip", "rar", "winrar", "compressor"],
   "author": "SkellierG",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "chalk": "5.3.0",
     "commander": "12.1.0",
@@ -23,7 +23,7 @@
     "figlet": "1.7.0",
     "log-symbols": "6.0.0",
     "ora": "8.0.1",
-    "winston": "^3.13.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston": "3.13.0",
+    "winston-daily-rotate-file": "5.0.0"
   }
 }
