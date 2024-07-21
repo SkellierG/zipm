@@ -10,12 +10,12 @@ import figlet from 'figlet'
 import logSymbols from 'log-symbols';
 import ora from 'ora';
 
-import Dependencies from './commands/dependencies.js';
+//import Dependencies from './commands/dependencies.js';
 
 program
     .name('zipm')
     .description('global compressor and uncompressor that uses rar, gzip, zip all in one command for comfort :3')
-    .version('0.0.0');
+    .version('0.0.3-ALPHA');
 
 program
     .argument('<file>', 'a file')
@@ -37,11 +37,11 @@ program.command('dependencies')
     .action(async(options) => {
         //console.log(logSymbols.info, options);
         if (options.installed) {
-            await Dependencies.installed();
+            //await Dependencies.installed();
         } else if (options.required) {
-            await Dependencies.required();
+            //await Dependencies.required();
         } else {
-            await Dependencies.all();
+            //await Dependencies.all();
         }
     });
 

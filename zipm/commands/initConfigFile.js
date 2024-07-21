@@ -11,19 +11,23 @@ class InitConfigFile {
 	constructor() {
 		this.version;
 		this.os;
-		this.cdm;
+		this.dis_os;
+		this.cmd;
 		this.root = __dirname;
-		this.depFileName = 'dep_list.json'
-		this.dep;		
+		this.dep_file = 'dep_list.json';
+		this.dep_dir = path.join(__dirname);
+		//this.dep;
 	}
 
 	async _init() {
 		try {
 			const results = {
+				initPlatform: await Platform._init(),
 				getCLIversion: await this.getCLIversion(),
 				getOS: await this.getOS(),
+				getDisOS: await this.getDisOS(),
 				getCmd: await this.getCmd(),
-				getListofDependencies: await this.getListofDependencies()
+				//getListofDependencies: await this.getListofDependencies()
 			};
 			
 			const allSuccessful = Object.values(results).every(result => !result.error);
@@ -33,9 +37,12 @@ class InitConfigFile {
 					data: {
 						version: this.version,
 						os: this.os,
+						dis_os: this.dis_os,
 						cmd: this.cmd,
 						root: this.root,
-						dep: this.dep
+						dep_file: this.dep_file,
+						dep_dir: this.dep_dir,
+						//dep: this.dep
 					},
 					error: undefined
 				}
@@ -47,56 +54,61 @@ class InitConfigFile {
 	}
 
 	async getCLIversion () {
-		console.log('getCLIversion');
+		//console.log('getCLIversion');
 		try {
-			const { stdout: res, stderr: err } = await $`zipm -V`;
-			this.version = res;
-			return { status: true };
-		} catch (err) {
-			console.error('getCLIversion: bash command failed', err)
-			return { status: false, error: err }
+			const { stdout, stderr} = await $`zipm -V`;
+			this.version = stdout;
+			return { data: this.version, error: undefined }
+		} catch (stderr) {
+			//console.error('getCLIversion: bash command failed', stderr)
+			return { data: undefined, error: stderr }
 		}
 	}
 
 	getOS() {
-		console.log('getOS');
-		try {
-			//Platform.getOs();
-			this.os = Platform.os
-			//throw new Error;
-			return { status: true }
-		} catch (err) {
-			return { status: false, error: err }
+		//console.log('getOS');
+		this.os = Platform.os;
+		if (!this.os) {
+			return { data: undefined, error: 'os is undefined' }
 		}
+		return { data: this.os, error: undefined }
+	}
+
+	getDisOS() {
+		//console.log('getOS');
+		//Platform.getOs();
+		this.dis_os = Platform.dis_os;
+		if (!this.dis_os) {
+			return { data: undefined, error: 'dis_os is undefined' }
+		}
+		return { data: this.dis_os, error: undefined }
 	}
 
 	getCmd() {
-		console.log('getCmd');
-		try {
-			//Platform.getCmd();
-			this.cmd = Platform.cmd;
-			//throw new Error;
-			return { status: true }
-		} catch (err) {
-			return { status: false, error: err }
+		//console.log('getCmd');
+		this.cmd = Platform.cmd;
+		if (!this.cmd) {
+			return { data: undefined, error: 'cmd is undefined' }
 		}
+		return { data: this.cmd, error: undefined }
 	}
 
-	async getListofDependencies() {
-		console.log('getListofDependencies');
-		try {
-			const dep_list = await fs.promises.readFile(path.join(__dirname, this.depFileName), 'utf8')
-			this.dep = JSON.parse(dep_list);
-			return { status: true }
-		} catch (err) {
-			console.error(`getListofDependencies: filed attempt to read ${this.depFileName}`, err)
-			return { status: false, error: err }
-		}
-	}
+	//changed to dependencies.js
+	// async getListofDependencies() {
+	// 	//console.log('getListofDependencies');
+	// 	try {
+	// 		const dep_list = await fs.promises.readFile(path.join(this.dep_dir, this.dep_file), 'utf8')
+	// 		this.dep = JSON.parse(dep_list);
+	// 		return { data: this.dep, error: undefined }
+	// 	} catch (err) {
+	// 		console.error(`getListofDependencies: filed attempt to read ${this.dep_dir}/${this.dep_file}`, err)
+	// 		return { data: undefined, error: err }
+	// 	}
+	// }
 }
 
-const conf = new InitConfigFile;
-console.log(await conf._init())
+// const conf = new InitConfigFile;
+// console.log(await conf._init())
 
 
 export default new InitConfigFile;

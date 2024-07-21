@@ -1,27 +1,40 @@
-[
-    {
-        "name": "GIT",
-        "cmd": ["git"],
-        "desc": "version controller"
-    },
-    {
-        "name": "RAR",
-        "cmd": ["rar"],
-        "desc": "compress files and directories into a .rar file"
-    },
-    {
-        "name": "UNRAR",
-        "cmd": ["unrar"],
-        "desc": "decompress .rar files"
-    },
-    {
-        "name": "7ZIP",
-        "cmd": ["zip"],
-        "desc": "compress and decompress .zip files"
-    },
-    {
-        "name": "GZIP",
-        "cmd": ["gzip"],
-        "desc": "compress and decompress .gz files"
-    }
-]
+{
+    "dependencies": [
+        {
+            "name": "GIT",
+            "name_install": "inst",
+            "desc": "version controller",
+            "extensions": [".git, .gitignore"]
+        },
+        {
+            "name": "RAR",
+            "name_install": "rar",
+            "desc": "compress files and directories into a .rar file",
+            "extensions": [".rar"]
+        },
+        {
+            "name": "UNRAR",
+            "name_install": "unrar",
+            "desc": "decompress .rar files",
+            "extensions": [".rar"]
+        },
+        {
+            "name": "7ZIP",
+            "name_install": "zip",
+            "desc": "compress and decompress .zip files",
+            "extensions": [".7z"]
+        },
+        {
+            "name": "GZIP",
+            "name_install": "gzip",
+            "desc": "compress and decompress .gz files",
+            "extensions": [".gz"]
+        }
+        {
+            "name": "RPM",
+            "name_install": "rpm",
+            "desc": "compress and rpm",
+            "extensions": [".rpm"]
+        }
+    ]
+}

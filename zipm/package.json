@@ -1,13 +1,14 @@
 {
   "name": "zipm",
-  "version": "0.0.2-ALPHA",
-  "description": "global compressor and uncompressor that uses rar, gzip, zip all in one command for comfort :3",
+  "version": "0.0.3-ALPHA",
+  "description": "<< WORK IN PROGRESS >> global compressor and uncompressor that uses rar, gzip, zip all in one command for comfort :3",
   "main": "main.js",
   "type": "module",
   "bin": {
     "zipm": "main.js"
   },
   "scripts": {
+    "postinstall": "node commands/config.js",
     "start": "node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
