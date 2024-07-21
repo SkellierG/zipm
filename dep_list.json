@@ -1,0 +1,40 @@
+{
+    "dependencies": [
+        {
+            "name": "GIT",
+            "name_install": "git",
+            "description": "version controller",
+            "extensions": [".git", ".gitignore"]
+        },
+        {
+            "name": "RAR",
+            "name_install": "rar",
+            "description": "compress files and directories into a .rar file",
+            "extensions": [".rar"]
+        },
+        {
+            "name": "UNRAR",
+            "name_install": "unrar",
+            "description": "decompress .rar files",
+            "extensions": [".rar"]
+        },
+        {
+            "name": "7ZIP",
+            "name_install": "zip",
+            "description": "compress and decompress .zip files",
+            "extensions": [".7z"]
+        },
+        {
+            "name": "GZIP",
+            "name_install": "gzip",
+            "description": "compress and decompress .gz files",
+            "extensions": [".gz"]
+        },
+        {
+            "name": "RPM",
+            "name_install": "rpm",
+            "description": "compress and rpm",
+            "extensions": [".rpm"]
+        }
+    ]
+}
