@@ -2,15 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { $ } from 'execa';
-//import { resolve } from 'node:path'
-//import chalk from 'chalk';
-//import Enquirer from 'enquirer';
-//import { program } from 'commander';
-//import Conf from 'conf';
-//import figlet from 'figlet'
-//import logSymbols from 'log-symbols';
-//import ora from 'ora';
-//import logg from './log.js';
 
 class Platform {
     constructor() {
@@ -19,11 +10,11 @@ class Platform {
         this.cmd;
     }
 
-    async _init() {
+    async init() {
         const results = {
-            getOS: await this.getOS(),
-            getDisOS: await this.getDisOS(),
-            getCmd: await this.getCmd()
+            getOS: await this._getOS(),
+            getDisOS: await this._getDisOS(),
+            getCmd: await this._getCmd()
         }
 
         const allSuccessful = Object.values(results).every(result => !result.error);
@@ -41,7 +32,7 @@ class Platform {
         return { data: undefined, error: results }
     }
 
-    getOS() {
+    _getOS() {
         try {
             this.os = os.platform();
             return { data: this.os, error: undefined }
@@ -51,27 +42,27 @@ class Platform {
         }
     }
 
-    async getDisOS() {
-        const distro = await this.getDistribution();
+    async _getDisOS() {
+        const distro = await this._getDistribution();
         if (distro.error) {
             return { data: undefined, error: distro.error }    
         }
         return distro;
     }
 
-    getCmd() {
+    _getCmd() {
         if (!this.dis_os) {
             return { data: undefined, error: 'Distribution not determined' };
         }
 
-        const command = this.getCommandByDistro(this.dis_os);
+        const command = this._getCommandByDistro(this.dis_os);
         if (command.error) {
             return { data: undefined, error: command.error }
         }
         return command;
     }
 
-    async getDistribution(){
+    async _getDistribution(){
         if (this.os === undefined) {
             return { data: undefined, error: 'OS is undefined' };
         }
@@ -87,7 +78,7 @@ class Platform {
                 }
 
                 const dist = dis.toString().toLowerCase();
-                const distro = await this.parseLinuxDistro(dist);
+                const distro = await this._parseLinuxDistro(dist);
                 this.dis_os = this.dis_os = distro.id.toString().toLowerCase();
 
                 return { data: this.dis_os, error: undefined }
@@ -103,7 +94,7 @@ class Platform {
         }
     }
 
-    parseLinuxDistro(data) {
+    _parseLinuxDistro(data) {
         const lines = data.split('\n');
         const result = {};
         
@@ -116,7 +107,7 @@ class Platform {
         return result;
     }
 
-    getCommandByDistro(distro) {
+    _getCommandByDistro(distro) {
         const commands = {
             'ubuntu': 'sudo apt-get',
             'debian': 'sudo apt-get',
@@ -135,70 +126,4 @@ class Platform {
     }
 }
 
-// const info = new Platform;
-
-// console.log(await info._init())
-// console.log(await info.getOS())
-// console.log(await info.getDistribution())
-// console.log(await info.getCmd())
-
 export default new Platform;
-
-//OLD CODE
-
-// let installationCmd = null;
-
-// const platform = os.platform();
-
-// function parseLinuxDis(data) {
-//     const lines = data.split('\n');
-//     const result = {};
-    
-//     lines.forEach(line => {
-//         const [key, value] = line.split('=');
-//         if (key && value !== undefined) {
-//             result[key] = value.replace(/"/g, ''); // Elimina las comillas dobles
-//         }
-//     });
-    
-//     return result;
-// }
-
-// async function defineCmd(){
-// switch (platform) {
-//     case 'linux':
-//         const { stdout: dis } = await $`cat /etc/os-release`;
-//         const dist = dis.toString().toLowerCase();
-//         const distro = parseLinuxDis(dist);
-//         //console.log(distro);
-//         logg.info(distro);
-
-//         switch (distro.id) {
-//             case 'fedora' || 'red hat':
-//                 installationCmd = 'sudo dnf';
-//                 break;
-
-//             case 'debian' || 'ubuntu':
-//                 installationCmd = "sudo apt-get";
-//                 break;
-        
-//             default:
-//                 console.error(chalk.red('not reconized distro, install manually'));
-//                 break;
-//         }
-//         break;
-
-//     case 'win32':
-//         installationCmd = 'choco';
-//         break;
-
-//     case 'darwin':
-//         installationCmd = 'brew';
-//         break;
-
-//     default:
-//         console.error(logSymbols.error, chalk.red('not reconized platform'))
-//         break;
-// }
-// return installationCmd.toString();
-// }

@@ -3,11 +3,11 @@ import path from 'path';
 import fs from 'fs';
 import url from 'url';
 import { $ } from 'execa';
-import Platform from './platform.js'
+import Platform from './platform.js';
 
 const __dirname = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..');
 
-class InitConfigFile {
+class ConfigInit {
 	constructor() {
 		this.version;
 		this.os;
@@ -16,18 +16,16 @@ class InitConfigFile {
 		this.root = __dirname;
 		this.dep_file = 'dep_list.json';
 		this.dep_dir = path.join(__dirname);
-		//this.dep;
 	}
 
-	async _init() {
+	async init() {
 		try {
 			const results = {
-				initPlatform: await Platform._init(),
-				getCLIversion: await this.getCLIversion(),
-				getOS: await this.getOS(),
-				getDisOS: await this.getDisOS(),
-				getCmd: await this.getCmd(),
-				//getListofDependencies: await this.getListofDependencies()
+				initPlatform: await Platform.init(),
+				getCLIversion: await this._getCLIversion(),
+				getOS: await this._getOS(),
+				getDisOS: await this._getDisOS(),
+				getCmd: await this._getCmd(),
 			};
 			
 			const allSuccessful = Object.values(results).every(result => !result.error);
@@ -53,7 +51,7 @@ class InitConfigFile {
 		}
 	}
 
-	async getCLIversion () {
+	async _getCLIversion () {
 		//console.log('getCLIversion');
 		try {
 			const { stdout, stderr} = await $`zipm -V`;
@@ -65,7 +63,7 @@ class InitConfigFile {
 		}
 	}
 
-	getOS() {
+	_getOS() {
 		//console.log('getOS');
 		this.os = Platform.os;
 		if (!this.os) {
@@ -74,7 +72,7 @@ class InitConfigFile {
 		return { data: this.os, error: undefined }
 	}
 
-	getDisOS() {
+	_getDisOS() {
 		//console.log('getOS');
 		//Platform.getOs();
 		this.dis_os = Platform.dis_os;
@@ -84,7 +82,7 @@ class InitConfigFile {
 		return { data: this.dis_os, error: undefined }
 	}
 
-	getCmd() {
+	_getCmd() {
 		//console.log('getCmd');
 		this.cmd = Platform.cmd;
 		if (!this.cmd) {
@@ -92,23 +90,6 @@ class InitConfigFile {
 		}
 		return { data: this.cmd, error: undefined }
 	}
-
-	//changed to dependencies.js
-	// async getListofDependencies() {
-	// 	//console.log('getListofDependencies');
-	// 	try {
-	// 		const dep_list = await fs.promises.readFile(path.join(this.dep_dir, this.dep_file), 'utf8')
-	// 		this.dep = JSON.parse(dep_list);
-	// 		return { data: this.dep, error: undefined }
-	// 	} catch (err) {
-	// 		console.error(`getListofDependencies: filed attempt to read ${this.dep_dir}/${this.dep_file}`, err)
-	// 		return { data: undefined, error: err }
-	// 	}
-	// }
 }
 
-// const conf = new InitConfigFile;
-// console.log(await conf._init())
-
-
-export default new InitConfigFile;
+export default new ConfigInit;

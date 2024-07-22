@@ -1,17 +1,19 @@
 // import { promises as fs } from 'node:fs';
-import fs from 'fs'
-import path from 'path'
-import Config from './config.js'
 // import { resolve } from 'node:path'
 // import chalk from 'chalk';
 // import Enquirer from 'enquirer';
 // import { program } from 'commander';
 // import Conf from 'conf';
-// import { $, ExecaError } from 'execa';
+import { $ } from 'execa';
 // import figlet from 'figlet'
 // import logSymbols from 'log-symbols';
 // import ora from 'ora';
-// import Platform from './platform.js'
+// import Platform from './platform.js';
+
+import fs from 'fs';
+import path from 'path';
+import ConfigFile from './configFile.js';
+
 
 function validateDependenciesAndFormats(dep) {
     const requiredKeys = ['name', 'name_install', 'description', 'extensions'];
@@ -58,21 +60,37 @@ async function processItem(item) {
         throw new Error(validationError.toString())
     }
 
-    console.log('\n')
-    console.log('name', item.name)
-    console.log('inst', item.name_install)
-    console.log('desc', item.description)
-    console.log('exts', item.extensions)
-    console.log('\n')
+    // console.log('\n')
+    // console.log('name', item.name)
+    // console.log('inst', item.name_install)
+    // console.log('desc', item.description)
+    // console.log('exts', item.extensions)
+    // console.log('\n')
 
     //testeo
-
+    const { data: testData, error: testError } = await testing(item);
+    if (testError) {
+        return { item, installed: false }
+    }
+    return { item, installed: true }
     //if uninstalled return { item, false }
     //if installed etrun { item, true }
 
     //return { data: item, error: undefined};
 }
 
+async function testing(item) {
+    try {
+        if (depo.config.os == 'win32') {
+            await $`where ${item.name_install}`;
+        } else {
+            await $`which ${item.name_install}`;
+        }
+        return { data: 'success', error: undefined }
+    } catch (err) {
+        return { data: undefined, error: err }
+    }
+}
 
 class Dependencies {
     constructor() {
@@ -81,7 +99,7 @@ class Dependencies {
     }
 
     async readConfigFile() {
-        const { data, error } = await Config.read();
+        const { data, error } = await ConfigFile.read();
         if (error) {
             return { data: undefined, error }
         }
@@ -111,7 +129,11 @@ class Dependencies {
         if (this.dep) {
             try {
                 for await (const result of asyncGenerator(this.dep)) {
-                  //
+                  if (result.installed === true) {
+                    results.installed.push(result.item);
+                  } else {
+                    results.uninstalled.push(result.item);
+                  }
                 }
             } catch (err) {
                 return { data: undefined, error: err }
@@ -124,6 +146,15 @@ class Dependencies {
     }
 }
 
+export default new Dependencies;
+
+
+
+
+
+
+
+
 const depo = new Dependencies;
 
 //console.log(await depo.readConfigFile());
@@ -135,7 +166,29 @@ console.log(await depo.testInstalledDependencies());
 
 //console.log(depo)
 
-export default new Dependencies;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //OLD CODE
 

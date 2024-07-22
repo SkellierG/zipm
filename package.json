@@ -8,7 +8,7 @@
     "zipm": "main.js"
   },
   "scripts": {
-    "postinstall": "node commands/config.js",
+    "postinstall": "node setup.js",
     "start": "node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
