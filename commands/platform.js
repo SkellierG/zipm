@@ -83,12 +83,14 @@ class Platform {
 
                 return { data: this.dis_os, error: undefined }
 
+            case 'android':
+
             case 'win32':
 
             case 'darwin':
                 this.dis_os = this.os;
                 return { data: this.dis_os, error: undefined }
-     
+
             default:
                 return { data: undefined, error: 'not reconized platform' }
         }
@@ -116,7 +118,8 @@ class Platform {
             'arch': 'pacman',
             'suse': 'zypper',
             'win32': 'choco',
-            'darwin': 'brew'
+            'darwin': 'brew',
+            'android': 'pkg'
         };
         if (!commands[distro]) {
             return { data: undefined, error: 'not registered distro, change CMD in your config file and put the package manager bash command of your distro' };
