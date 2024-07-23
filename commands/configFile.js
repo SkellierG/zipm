@@ -86,6 +86,9 @@ class ConfigFile {
 
   _writeConfig(data) {
     try {
+      if (!fs.existsSync(this.dir)) {
+        fs.promises.mkdir(this.dir)
+      }
       fs.promises.writeFile(this.fullpath, data,'utf8')
       return { data: data, error: undefined }
     } catch(err) {
