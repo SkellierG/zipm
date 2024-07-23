@@ -15,7 +15,7 @@ import ora from 'ora';
 program
     .name('zipm')
     .description('global compressor and uncompressor that uses rar, gzip, zip all in one command for comfort :3')
-    .version('0.0.3-ALPHA');
+    .version('0.0.4-ALPHA');
 
 program
     .argument('<file>', 'a file')
