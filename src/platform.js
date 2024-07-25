@@ -10,7 +10,7 @@ class Platform {
         this.cmd;
     }
 
-    async init() {
+    async fetchData() {
         const results = {
             getOS: await this._getOS(),
             getDisOS: await this._getDisOS(),
@@ -33,13 +33,11 @@ class Platform {
     }
 
     _getOS() {
-        try {
+        if (os.platform()) {
             this.os = os.platform();
             return { data: this.os, error: undefined }
-        } catch (err) {
-            console.error();
-            return { data: undefined, error: err }
         }
+        return { data: undefined, error: 'this.os is undefined' }
     }
 
     async _getDisOS() {
@@ -129,4 +127,8 @@ class Platform {
     }
 }
 
-export default new Platform;
+const platform = new Platform;
+
+export default platform;
+
+export const fetchData = ()=>platform.fetchData();

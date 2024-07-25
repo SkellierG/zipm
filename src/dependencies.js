@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import ConfigCache from './configCache.js';
+import ConfigCache from './config/configCache.js';
 import { $ } from 'execa';
 
 await ConfigCache.update();
@@ -10,7 +10,7 @@ class Dependencies {
         this.dep;
     }
 
-    async getList() {
+    async fetchData() {
         const results = {
             getListofDependencies: await this._getListofDependencies(),
             testInstalledDependencies: await this._testInstalledDependencies()
@@ -28,6 +28,7 @@ class Dependencies {
     async _getListofDependencies() {
         // console.log('getListofDependencies');
         try {
+            //console.log('CACHE CACHE CACHE', ConfigCache.dep_dir)
             const dep_list = await fs.promises.readFile(path.join(ConfigCache.dep_dir, ConfigCache.dep_file), 'utf8');
             this.dep = JSON.parse(dep_list).dependencies;
             return { data: this.dep, error: undefined };
@@ -143,16 +144,18 @@ class Dependencies {
     }
 }
 
-export default new Dependencies();
+const dependencies = new Dependencies;
+
+export default dependencies;
+
+export const fetchData = ()=>dependencies.fetchData();
 
 
 
-const depo = new Dependencies;
-
-console.log(await depo.getList());
+// console.log(await depo.getList());
 // await depo.getListofDependencies()
 
-console.log(JSON.stringify(await depo.getList()));
+// console.log(JSON.stringify(await depo.getList()));
 // console.log(await depo.testInstalledDependencies());
 
 //console.log(depo)

@@ -98,4 +98,10 @@ class ConfigFile {
   }
 }
 
-export default new ConfigFile;
+const configFile = new ConfigFile;
+
+export default configFile;
+
+export const read = ()=>configFile.read();
+export const write = (data)=>configFile.write(data);
+export const _hardWrite = (data)=>configFile._writeConfig(data);

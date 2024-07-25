@@ -1,10 +1,10 @@
-import ConfigFile from './configFile.js';
+import { _hardWrite } from './configFile.js';
 import Init from './configInit.js';
 
 class ConfigSetup {
 
-  async init() {
-    const { data: InitData, error: InitError } = await Init.init();
+  async fetchData() {
+    const { data: InitData, error: InitError } = await Init.fetchData();
     if (InitError) {
       return { data: undefined, error: InitError };
     }
@@ -34,7 +34,7 @@ DEP_FILE=${Init.dep_file}
 # folder where dependencies file is stored
 DEP_DIR=${Init.dep_dir}`;
 
-    const { data: writeData, error: writeError } = await ConfigFile._writeConfig(initContent);
+    const { data: writeData, error: writeError } = await _hardWrite(initContent);
     if (writeError) {
       return { data: undefined, error: writeError };
     }
@@ -43,4 +43,8 @@ DEP_DIR=${Init.dep_dir}`;
   }
 }
 
-export default new ConfigSetup;
+const configSetup = new ConfigSetup;
+
+export default configSetup;
+
+export const fetchData = ()=>configSetup.fetchData();

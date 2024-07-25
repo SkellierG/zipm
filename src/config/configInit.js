@@ -3,9 +3,9 @@ import path from 'path';
 import fs from 'fs';
 import url from 'url';
 import { $ } from 'execa';
-import Platform from './platform.js';
+import Platform from './../platform.js';
 
-const __dirname = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '..');
+const __dirname = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '../..');
 
 class ConfigInit {
 	constructor() {
@@ -18,10 +18,10 @@ class ConfigInit {
 		this.dep_dir = path.join(__dirname);
 	}
 
-	async init() {
+	async fetchData() {
 		try {
 			const results = {
-				initPlatform: await Platform.init(),
+				initPlatform: await Platform.fetchData(),
 				getCLIversion: await this._getCLIversion(),
 				getOS: await this._getOS(),
 				getDisOS: await this._getDisOS(),
@@ -40,7 +40,6 @@ class ConfigInit {
 						root: this.root,
 						dep_file: this.dep_file,
 						dep_dir: this.dep_dir,
-						//dep: this.dep
 					},
 					error: undefined
 				}
@@ -52,19 +51,16 @@ class ConfigInit {
 	}
 
 	async _getCLIversion () {
-		//console.log('getCLIversion');
 		try {
 			const { stdout, stderr} = await $`zipm -V`;
 			this.version = stdout;
 			return { data: this.version, error: undefined }
 		} catch (stderr) {
-			//console.error('getCLIversion: bash command failed', stderr)
 			return { data: undefined, error: stderr }
 		}
 	}
 
 	_getOS() {
-		//console.log('getOS');
 		this.os = Platform.os;
 		if (!this.os) {
 			return { data: undefined, error: 'os is undefined' }
@@ -73,8 +69,6 @@ class ConfigInit {
 	}
 
 	_getDisOS() {
-		//console.log('getOS');
-		//Platform.getOs();
 		this.dis_os = Platform.dis_os;
 		if (!this.dis_os) {
 			return { data: undefined, error: 'dis_os is undefined' }
@@ -83,7 +77,6 @@ class ConfigInit {
 	}
 
 	_getCmd() {
-		//console.log('getCmd');
 		this.cmd = Platform.cmd;
 		if (!this.cmd) {
 			return { data: undefined, error: 'cmd is undefined' }
@@ -92,4 +85,8 @@ class ConfigInit {
 	}
 }
 
-export default new ConfigInit;
+const configInit = new ConfigInit
+
+export default configInit;
+
+export const fetchData = ()=>configInit.fetchData();
