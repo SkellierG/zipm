@@ -1,4 +1,4 @@
-import { fetchData } from './dependencies.js';
+import { fetchData } from './getDependencies.js';
 
 class InstallingDep {
 	constructor() {

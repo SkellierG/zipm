@@ -5,7 +5,7 @@ import { $ } from 'execa';
 
 await ConfigCache.update();
 
-class Dependencies {
+class GetDependencies {
     constructor() {
         this.dep;
     }
@@ -144,11 +144,11 @@ class Dependencies {
     }
 }
 
-const dependencies = new Dependencies;
+const getDependencies = new GetDependencies;
 
-export default dependencies;
+export default getDependencies;
 
-export const fetchData = ()=>dependencies.fetchData();
+export const fetchData = ()=>getDependencies.fetchData();
 
 
 
