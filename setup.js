@@ -1,8 +1,8 @@
-import { fetchData } from './src/config/configSetup.js';
+import { setup } from './src/config/configSetup.js';
 import { update } from './src/config/configCache.js';
 
 async function run() {
-  const result = await fetchData();
+  const result = await setup();
   const cache = await update();
   
   if (result.error) {

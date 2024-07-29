@@ -1,9 +1,9 @@
-import { _hardWrite } from './configFile.js';
-import Init from './configInit.js';
+import { hardWrite } from './configFile.js';
+import Init from './configInitInfo.js';
 
 class ConfigSetup {
 
-  async fetchData() {
+  static async setup() {
     const { data: InitData, error: InitError } = await Init.fetchData();
     if (InitError) {
       return { data: undefined, error: InitError };
@@ -14,27 +14,27 @@ class ConfigSetup {
 # you are doing
 
 # current version of zipm
-VERSION=${Init.version}
+VERSION=${InitData.version || 'null'}
 
 # operative system
-OS=${Init.os}
+OS=${InitData.os || 'null'}
 
 # distro (only if it is linux)
-DIS_OS=${Init.dis_os}
+DIS_OS=${InitData.dis_os || 'null'}
 
 # package manager main command
-CMD=${Init.cmd}
+CMD=${InitData.cmd || 'null'}
 
 # root folder of the zipm package
-ROOT=${Init.root}
+ROOT=${InitData.root || 'null'}
 
 # name of the dependencies file (.json)
-DEP_FILE=${Init.dep_file}
+DEP_FILE=${InitData.dep_file || 'null'}
 
 # folder where dependencies file is stored
-DEP_DIR=${Init.dep_dir}`;
+DEP_DIR=${InitData.dep_dir || 'null'}`;
 
-    const { data: writeData, error: writeError } = await _hardWrite(initContent);
+    const { data: writeData, error: writeError } = await hardWrite(initContent);
     if (writeError) {
       return { data: undefined, error: writeError };
     }
@@ -43,8 +43,6 @@ DEP_DIR=${Init.dep_dir}`;
   }
 }
 
-const configSetup = new ConfigSetup;
+export default ConfigSetup;
 
-export default configSetup;
-
-export const fetchData = ()=>configSetup.fetchData();
+export const setup = () => ConfigSetup.setup();

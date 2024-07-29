@@ -9,6 +9,13 @@ class ConfigFile {
     this.fullpath = path.join(this.dir, this.name);
   }
 
+  static getInstance() {
+    if (!ConfigFile.instance) {
+      ConfigFile.instance = new ConfigFile();
+    }
+    return ConfigFile.instance;
+  }
+
   async read() {
       const { data: first, error: readError } = await this._readConfig();
       if (readError) {
@@ -32,7 +39,7 @@ class ConfigFile {
 
       const update = this._updateConfig(original, data);
       const result = this._configToString(update);
-      return this._writeConfig(result);
+      return this.hardWrite(result);
   }
 
   async _readConfig() {
@@ -84,7 +91,7 @@ class ConfigFile {
     }).join('\n');
   }
 
-  _writeConfig(data) {
+  hardWrite(data) {
     try {
       if (!fs.existsSync(this.dir)) {
         fs.promises.mkdir(this.dir)
@@ -98,10 +105,10 @@ class ConfigFile {
   }
 }
 
-const configFile = new ConfigFile;
+const configFile = ConfigFile.getInstance();
 
 export default configFile;
 
-export const read = ()=>configFile.read();
-export const write = (data)=>configFile.write(data);
-export const _hardWrite = (data)=>configFile._writeConfig(data);
+export const read = () => configFile.read();
+export const write = data => configFile.write(data);
+export const hardWrite = data => configFile.hardWrite(data);
