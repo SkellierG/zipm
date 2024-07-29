@@ -1,20 +1,19 @@
 import fs from 'fs';
 import path from 'path';
-import ConfigCache from './config/configCache.js';
+import { update as updateCache, getOS, getDepDir, getDepFile } from './config/configCache.js';
 import { $ } from 'execa';
 
-await ConfigCache.update();
+// Asegúrate de que la caché se actualiza antes de usar esta clase
+await updateCache();
 
 class GetDependencies {
-    constructor() {
-        this.dep;
-    }
+    static dep;
 
-    async fetchData() {
+    static async fetchData() {
         const results = {
-            getListofDependencies: await this._getListofDependencies(),
+            getListOfDependencies: await this._getListOfDependencies(),
             testInstalledDependencies: await this._testInstalledDependencies()
-        }
+        };
 
         const allSuccessful = Object.values(results).every(result => !result.error);
 
@@ -22,134 +21,129 @@ class GetDependencies {
             return { data: undefined, error: results };
         }
 
-        return { data: results.testInstalledDependencies.data, error: undefined }
+        return { data: results.testInstalledDependencies.data, error: undefined };
     }
 
-    async _getListofDependencies() {
-        // console.log('getListofDependencies');
+    static async _getListOfDependencies() {
         try {
-            //console.log('CACHE CACHE CACHE', ConfigCache.dep_dir)
-            const dep_list = await fs.promises.readFile(path.join(ConfigCache.dep_dir, ConfigCache.dep_file), 'utf8');
-            this.dep = JSON.parse(dep_list).dependencies;
+            const depDirResult = await getDepDir();
+            if (depDirResult.error) {
+                return { data: undefined, error: `Failed to get dependency directory: ${depDirResult.error}` };
+            }
+            const depFileResult = await getDepFile();
+            if (depFileResult.error) {
+                return { data: undefined, error: `Failed to get dependency file name: ${depFileResult.error}` };
+            }
+
+            const depListPath = path.join(depDirResult.data, depFileResult.data);
+            const depListContent = await fs.promises.readFile(depListPath, 'utf8');
+            this.dep = JSON.parse(depListContent).dependencies;
             return { data: this.dep, error: undefined };
-        } catch (err) {
-            console.error(`getListofDependencies: failed attempt to read ${ConfigCache.dep_dir}/${ConfigCache.dep_file}`, err);
-            return { data: undefined, error: err };
+        } catch (error) {
+            console.error(`Failed to read dependencies file:`, error);
+            return { data: undefined, error: `Failed to read dependencies: ${error.message}` };
         }
     }
 
-    async _testInstalledDependencies() {
-        let results = {
+    static async _testInstalledDependencies() {
+        const results = {
             installed: [],
             uninstalled: []
         };
 
-        if (this.dep) {
-            try {
-                for await (const result of this._asyncGenerator(this.dep)) {
-                    if (result.installed === true) {
-                        results.installed.push(result.item);
-                    } else {
-                        results.uninstalled.push(result.item);
-                    }
+        const depResult = await this._getListOfDependencies();
+        if (depResult.error) {
+            return { data: undefined, error: depResult.error };
+        }
+
+        if (!this.dep) {
+            return { data: undefined, error: 'Dependencies are not loaded' };
+        }
+
+        try {
+            for await (const result of this._asyncGenerator(this.dep)) {
+                if (result.installed) {
+                    results.installed.push(result.item);
+                } else {
+                    results.uninstalled.push(result.item);
                 }
-            } catch (err) {
-                return { data: undefined, error: err };
             }
-        } else {
-            return { data: undefined, error: 'dependencies.js:Dependencies:testInstalledDependencies: this.dep is undefined' };
+        } catch (error) {
+            return { data: undefined, error: `Testing dependencies failed: ${error.message}` };
         }
 
         return { data: results, error: undefined };
     }
 
-    // Método privado para validar dependencias y formatos
-    _validateDependenciesAndFormats(dep) {
+    static _validateDependenciesAndFormats(dep) {
         const requiredKeys = ['name', 'name_install', 'description', 'extensions'];
         for (const key of requiredKeys) {
             if (!(key in dep)) {
-                return { data: undefined, error: `Error: Missing required key "${key}" in dependency ${JSON.stringify(dep)}` };
+                return { data: undefined, error: `Missing required key "${key}" in dependency ${JSON.stringify(dep)}` };
             }
         }
-        // Verificar formato
+
         if (!Array.isArray(dep.extensions)) {
-            return { data: undefined, error: `Error: "extensions" should be an array in dependency ${JSON.stringify(dep)}` };
+            return { data: undefined, error: `Extensions should be an array in dependency ${JSON.stringify(dep)}` };
         }
+
         if (dep.extensions.some(ext => typeof ext !== 'string')) {
-            return { data: undefined, error: `Error: All items in "extensions" should be strings in dependency ${JSON.stringify(dep)}` };
+            return { data: undefined, error: `All extensions should be strings in dependency ${JSON.stringify(dep)}` };
         }
 
-        // Verificar que 'name', 'name_install', y 'description' sean strings
-        if (typeof dep.name !== 'string') {
-            return { data: undefined, error: `Error: "name" should be a string in dependency ${JSON.stringify(dep)}` };
-        }
-        if (typeof dep.name_install !== 'string') {
-            return { data: undefined, error: `Error: "name_install" should be a string in dependency ${JSON.stringify(dep)}` };
-        }
-        if (typeof dep.description !== 'string') {
-            return { data: undefined, error: `Error: "description" should be a string in dependency ${JSON.stringify(dep)}` };
+        if (typeof dep.name !== 'string' || typeof dep.name_install !== 'string' || typeof dep.description !== 'string') {
+            return { data: undefined, error: `Name, name_install, and description should be strings in dependency ${JSON.stringify(dep)}` };
         }
 
-        return { data: `All dependencies have valid formats`, error: undefined };
+        return { data: 'All dependencies have valid formats', error: undefined };
     }
 
-    // Método privado para procesar cada ítem
-    async _processItem(item) {
+    static async _processItem(item) {
         const { data: validationData, error: validationError } = this._validateDependenciesAndFormats(item);
         if (validationError) {
-            throw new Error(validationError.toString());
+            throw new Error(validationError);
         }
 
-        // console.log('\n');
-        // console.log('name', item.name);
-        // console.log('inst', item.name_install);
-        // console.log('desc', item.description);
-        // console.log('exts', item.extensions);
-        // console.log('\n');
-
-        // Testeo
         const { data: testData, error: testError } = await this._testing(item);
         if (testError) {
             return { item, installed: false };
         }
         return { item, installed: true };
-        // if uninstalled return { item, false }
-        // if installed return { item, true }
-        // return { data: item, error: undefined };
     }
 
-    // Método privado para la prueba de instalación
-    async _testing(item) {
+    static async _testing(item) {
         try {
-            if (ConfigCache.os === 'win32') {
+            const osResult = await getOS();
+            if (osResult.error) {
+                return { data: undefined, error: `Failed to get OS: ${osResult.error}` };
+            }
+
+            if (osResult.data === 'win32') {
                 await $`where ${item.name_install}`;
             } else {
                 await $`which ${item.name_install}`;
             }
+            //TODO manejar correctamente los stderr
             return { data: 'success', error: undefined };
         } catch (err) {
             return { data: undefined, error: err };
         }
     }
 
-    // Método privado para generar de forma asíncrona
-    async *_asyncGenerator(items) {
+    static async *_asyncGenerator(items) {
         for (const item of items) {
             try {
                 yield await this._processItem(item);
-            } catch (error) {
-                throw error; // Lanzar el error para detener la iteración
+            } catch (err) {
+                throw err; // Lanza el error para detener la iteración
             }
         }
     }
 }
 
-const getDependencies = new GetDependencies;
+export default GetDependencies;
 
-export default getDependencies;
-
-export const fetchData = ()=>getDependencies.fetchData();
-
+export const fetchData = () => GetDependencies.fetchData();
 
 
 // console.log(await depo.getList());
