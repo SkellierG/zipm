@@ -73,11 +73,11 @@ class ConfigPlatform {
 
   static _getCommandByDistro(distro) {
     const commands = {
-      'ubuntu': 'sudo apt-get',
-      'debian': 'sudo apt-get',
-      'fedora': 'sudo dnf',
-      'centos': 'sudo yum',
-      'arch': 'pacman',
+      'ubuntu': 'sudo -S apt-get',
+      'debian': 'sudo -S apt-get',
+      'fedora': 'sudo -S dnf',
+      'centos': 'sudo -S yum',
+      'arch': 'sudo -S pacman',
       'suse': 'zypper',
       'win32': 'choco',
       'darwin': 'brew',
