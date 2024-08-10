@@ -1,97 +1,162 @@
-import { read } from './configFile.js'
+import { read as configReader } from './configFile.js';
 
+/**
+ * Singleton class for managing configuration cache.
+ * This class ensures that there's only one instance of the configuration cache 
+ * throughout the application lifecycle.
+ */
 class ConfigCache {
+    #data = {};
+    #configReader;
 
-	#data = {};
+    /**
+     * Initializes the configuration cache with an empty data object.
+     */
+    constructor() {
+        this.#data = {};
+        this.#configReader = configReader;
+    }
 
-	constructor () {
-		this.#data = {};
-	}
+    static getInstance() {
+        if (!ConfigCache.instance) {
+            ConfigCache.instance = new ConfigCache();
+        }
+        return ConfigCache.instance;
+    }
 
-	static getInstance() {
-		if (!ConfigCache.instance) {
-			ConfigCache.instance = new ConfigCache();
-		}
-		return ConfigCache.instance;
-	}
+    /**
+     * Updates the configuration cache with data read from the configuration file.
+     * @returns {Promise<{ data: { configCache: object, configFile: object } | undefined, error: string | undefined }>}
+     * - `data`: An object containing the updated cache and configuration file data if successful.
+     * - `error`: An error message if the update fails.
+     */
+    async update() {
+        const readConfig = await this.#configReader();
+        if (readConfig.error) {
+            return { data: undefined, error: readConfig.error };
+        }
 
-	async update () {
-		const readConfig = await read();
-		if (readConfig.error) {
-			return { data: undefined, error: readConfig.error }
-		}
+        this.#data = { ...readConfig.data };
+        return { data: { configCache: this.#data, configFile: readConfig.data }, error: undefined };
+    }
 
-		const res = {
-			cache_version: this.#data.version = readConfig.data.version,
-			cache_os: this.#data.os = readConfig.data.os,
-			cache_dis_os: this.#data.dis_os = readConfig.data.dis_os,
-			cache_cmd: this.#data.cmd = readConfig.data.cmd,
-			cache_root: this.#data.root = readConfig.data.root,
-			cache_dep_file: this.#data.dep_file = readConfig.data.dep_file,
-			cache_dep_dir: this.#data.dep_dir = readConfig.data.dep_dir
-		}
+    /**
+     * Retrieves all cached configuration data.
+     * @returns {{ data: object | undefined, error: string | undefined }}
+     * - `data`: The cached configuration data if available.
+     * - `error`: An error message if the data is not available.
+     */
+    getAll() {
+        return this.#data !== undefined 
+            ? { data: this.#data, error: undefined } 
+            : { data: undefined, error: 'Data not available' };
+    }
 
-		return { data: { configCache: res, configFile: readConfig.data }, error: undefined }
-	}
-	getAll() {
-		return this.#data !== undefined 
-			? { data: this.#data, error: undefined } 
-			: { data: undefined, error: 'Data not available' };
-	}
+    // Methods for accessing specific configuration data
+    getVersion() { return this.#getCachedData('version', 'Version not available'); }
+    
+	getOS() { return this.#getCachedData('os', 'OS not available'); }
+    
+	getDisOS() { return this.#getCachedData('dis_os', 'Distribution OS not available'); }
+    
+	getCmd() { return this.#getCachedData('cmd', 'Command not available'); }
+    
+	getRoot() { return this.#getCachedData('root', 'Root not available'); }
+    
+	getDepFile() { return this.#getCachedData('dep_file', 'Dependency file not available'); }
+    
+	getDepDir() { return this.#getCachedData('dep_dir', 'Dependency directory not available'); }
 
-	getVersion() {
-		return this.#data.version !== undefined 
-			? { data: this.#data.version, error: undefined } 
-			: { data: undefined, error: 'Version not available' };
-	}
-
-	getOS() {
-		return this.#data.os !== undefined 
-			? { data: this.#data.os, error: undefined } 
-			: { data: undefined, error: 'OS not available' };
-	}
-
-	getDisOS() {
-		return this.#data.dis_os !== undefined 
-			? { data: this.#data.dis_os, error: undefined } 
-			: { data: undefined, error: 'Distribution OS not available' };
-	}
-
-	getCmd() {
-		return this.#data.cmd !== undefined 
-			? { data: this.#data.cmd, error: undefined } 
-			: { data: undefined, error: 'Command not available' };
-	}
-
-	getRoot() {
-		return this.#data.root !== undefined 
-			? { data: this.#data.root, error: undefined } 
-			: { data: undefined, error: 'Root not available' };
-	}
-
-	getDepFile() {
-		return this.#data.dep_file !== undefined 
-			? { data: this.#data.dep_file, error: undefined } 
-			: { data: undefined, error: 'Dependency file not available' };
-	}
-
-	getDepDir() {
-		return this.#data.dep_dir !== undefined 
-			? { data: this.#data.dep_dir, error: undefined } 
-			: { data: undefined, error: 'Dependency directory not available' };
-	}
+    /**
+     * Helper method to get cached data or return an error message.
+     * @param {string} key - The key of the cached data.
+     * @param {string} errorMsg - The error message if the data is not available.
+     * @returns {{ data: string | undefined, error: string | undefined }}
+     */
+    #getCachedData(key, errorMsg) {
+        return this.#data[key] !== undefined 
+            ? { data: this.#data[key], error: undefined } 
+            : { data: undefined, error: errorMsg };
+    }
 }
 
+/**
+ * Singleton class for managing configuration cache.
+ * This class ensures that there's only one instance of the configuration cache 
+ * throughout the application lifecycle.
+ */
 const configCache = ConfigCache.getInstance();
 
 export default configCache;
 
+/**
+ * Updates the configuration cache using the singleton instance.
+ * @returns {Promise<{ data: { configCache: object, configFile: object } | undefined, error: string | undefined }>}
+ * - `data`: An object containing the updated cache and configuration file data if successful.
+ * - `error`: An error message if the update fails.
+ */
 export const update = () => configCache.update();
+
+/**
+ * Retrieves all cached configuration data using the singleton instance.
+ * @returns {{ data: object | undefined, error: string | undefined }}
+ * - `data`: The cached configuration data if available.
+ * - `error`: An error message if the data is not available.
+ */
 export const getAll = () => configCache.getAll();
+
+/**
+ * Retrieves the cached version from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached version if available.
+ * - `error`: An error message if the version is not available.
+ */
 export const getVersion = () => configCache.getVersion();
+
+/**
+ * Retrieves the cached operating system from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached operating system if available.
+ * - `error`: An error message if the OS is not available.
+ */
 export const getOS = () => configCache.getOS();
+
+/**
+ * Retrieves the cached distribution of the operating system from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached distribution of the OS if available.
+ * - `error`: An error message if the distribution OS is not available.
+ */
 export const getDisOS = () => configCache.getDisOS();
+
+/**
+ * Retrieves the cached command from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached command if available.
+ * - `error`: An error message if the command is not available.
+ */
 export const getCmd = () => configCache.getCmd();
+
+/**
+ * Retrieves the cached root directory from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached root directory if available.
+ * - `error`: An error message if the root is not available.
+ */
 export const getRoot = () => configCache.getRoot();
+
+/**
+ * Retrieves the cached dependency file name from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached dependency file name if available.
+ * - `error`: An error message if the dependency file is not available.
+ */
 export const getDepFile = () => configCache.getDepFile();
+
+/**
+ * Retrieves the cached dependency directory from the configuration using the singleton instance.
+ * @returns {{ data: string | undefined, error: string | undefined }}
+ * - `data`: The cached dependency directory if available.
+ * - `error`: An error message if the dependency directory is not available.
+ */
 export const getDepDir = () => configCache.getDepDir();

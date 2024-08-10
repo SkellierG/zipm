@@ -7,13 +7,15 @@ const __dirname = path.join(url.fileURLToPath(new URL('.', import.meta.url)), '.
 
 class ConfigInitInfo {
 
+  static platform = Platform;
+
   static async fetchData() {
     try {
       const results = {
         getCLIversion: await this._getCLIversion(),
-        getOS: await Platform.getOS(),
-        getDisOS: await Platform.getDisOS(),
-        getCmd: await Platform.getCmd()
+        getOS: this.platform.getOS(),
+        getDisOS: await this.platform.getDisOS(),
+        getCmd: await this.platform.getCmd()
       };
 
       const allSuccessful = Object.values(results).every(result => !result.error);

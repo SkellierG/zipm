@@ -1,36 +1,52 @@
 import fs from 'fs';
 import path from 'path';
-import { update as updateCache, getOS, getDepDir, getDepFile } from './config/configCache.js';
+import configCache from './config/configCache.js';
 import { $ } from 'execa';
 
-// Asegúrate de que la caché se actualiza antes de usar esta clase
-await updateCache();
+// Ensure that the cache is updated before using this class
 
+/**
+ * A class for managing dependency retrieval and testing.
+ */
 class GetDependencies {
     static dep;
+    static cache = configCache;
+    static init = configCache.updateCache();
 
+    /**
+     * Retrieves and verifies the list of dependencies by first fetching the list and then checking their installation status.
+     * @returns {Promise<{ data: Array | undefined, error: Object | undefined }>} 
+     * - `data`: An array of installed dependencies if all operations are successful.
+     * - `error`: An object containing errors for each operation if any occurred.
+     */
     static async fetchData() {
         const results = {
             getListOfDependencies: await this._getListOfDependencies(),
             testInstalledDependencies: await this._testInstalledDependencies()
         };
 
-        const allSuccessful = Object.values(results).every(result => !result.error);
 
+        const allSuccessful = Object.values(results).every(result => !result.error);
         if (!allSuccessful) {
             return { data: undefined, error: results };
         }
-
+        
         return { data: results.testInstalledDependencies.data, error: undefined };
     }
 
+    /**
+     * Reads and parses the dependencies file to obtain the list of dependencies.
+     * @returns {Promise<{ data: Array | undefined, error: string | undefined }>}
+     * - `data`: An array of dependency objects parsed from the file.
+     * - `error`: An error message if there was an issue reading or parsing the file.
+     */
     static async _getListOfDependencies() {
         try {
-            const depDirResult = await getDepDir();
+            const depDirResult = this.cache.getDepDir();
             if (depDirResult.error) {
                 return { data: undefined, error: `Failed to get dependency directory: ${depDirResult.error}` };
             }
-            const depFileResult = await getDepFile();
+            const depFileResult = this.cache.getDepFile();
             if (depFileResult.error) {
                 return { data: undefined, error: `Failed to get dependency file name: ${depFileResult.error}` };
             }
@@ -38,13 +54,19 @@ class GetDependencies {
             const depListPath = path.join(depDirResult.data, depFileResult.data);
             const depListContent = await fs.promises.readFile(depListPath, 'utf8');
             this.dep = JSON.parse(depListContent).dependencies;
+
             return { data: this.dep, error: undefined };
         } catch (error) {
-            console.error(`Failed to read dependencies file:`, error);
-            return { data: undefined, error: `Failed to read dependencies: ${error.message}` };
+            return { data: undefined, error: `Failed to read dependencies file: ${error.message}` };
         }
     }
 
+    /**
+     * Tests whether each dependency from the list is installed on the system.
+     * @returns {Promise<{ data: { installed: Array, uninstalled: Array } | undefined, error: string | undefined }>}
+     * - `data`: An object with two arrays: `installed` and `uninstalled`, listing dependencies based on their installation status.
+     * - `error`: An error message if there was an issue testing the dependencies.
+     */
     static async _testInstalledDependencies() {
         const results = {
             installed: [],
@@ -75,6 +97,13 @@ class GetDependencies {
         return { data: results, error: undefined };
     }
 
+    /**
+     * Validates the format and required fields of a dependency object.
+     * @param {Object} dep - A dependency object containing information about a dependency.
+     * @returns {{ data: string | undefined, error: string | undefined }}
+     * - `data`: Success message if the dependency format is valid.
+     * - `error`: An error message if any required fields are missing or the format is incorrect.
+     */
     static _validateDependenciesAndFormats(dep) {
         const requiredKeys = ['name', 'name_install', 'description', 'extensions'];
         for (const key of requiredKeys) {
@@ -98,6 +127,13 @@ class GetDependencies {
         return { data: 'All dependencies have valid formats', error: undefined };
     }
 
+    /**
+     * Processes a dependency object by validating its format and testing if it's installed.
+     * @param {Object} item - A dependency object to be processed.
+     * @returns {Promise<{ item: Object, installed: boolean }>}
+     * - `item`: The processed dependency object.
+     * - `installed`: `true` if the dependency is installed, `false` otherwise.
+     */
     static async _processItem(item) {
         const { data: validationData, error: validationError } = this._validateDependenciesAndFormats(item);
         if (validationError) {
@@ -111,9 +147,16 @@ class GetDependencies {
         return { item, installed: true };
     }
 
+    /**
+     * Tests whether a specific dependency is installed on the system.
+     * @param {Object} item - A dependency object representing the dependency to be tested.
+     * @returns {Promise<{ data: string | undefined, error: string | undefined }>}
+     * - `data`: Success message if the dependency is found.
+     * - `error`: An error message if the test fails.
+     */
     static async _testing(item) {
         try {
-            const osResult = await getOS();
+            const osResult = this.cache.getOS();
             if (osResult.error) {
                 return { data: undefined, error: `Failed to get OS: ${osResult.error}` };
             }
@@ -123,19 +166,24 @@ class GetDependencies {
             } else {
                 await $`which ${item.name_install}`;
             }
-            //TODO manejar correctamente los stderr
+
             return { data: 'success', error: undefined };
         } catch (err) {
-            return { data: undefined, error: err };
+            return { data: undefined, error: err.message };
         }
     }
 
+    /**
+     * Asynchronous generator that processes each dependency item.
+     * @param {Array} items - An array of dependency objects to be processed.
+     * @returns {AsyncGenerator<{ item: Object, installed: boolean }>} An asynchronous iterator yielding processed dependency objects.
+     */
     static async *_asyncGenerator(items) {
         for (const item of items) {
             try {
                 yield await this._processItem(item);
             } catch (err) {
-                throw err; // Lanza el error para detener la iteración
+                throw err; // Propagate the error to stop the iteration
             }
         }
     }
@@ -143,128 +191,10 @@ class GetDependencies {
 
 export default GetDependencies;
 
+/**
+ * Function to fetch the list of dependencies and their installation status.
+ * @returns {Promise<{ data: Array | undefined, error: Object | undefined }>}
+ * - `data`: An array of installed and uninstalled dependencies if successful.
+ * - `error`: An object containing errors if any occurred.
+ */
 export const fetchData = () => GetDependencies.fetchData();
-
-
-// console.log(await depo.getList());
-// await depo.getListofDependencies()
-
-// console.log(JSON.stringify(await depo.getList()));
-// console.log(await depo.testInstalledDependencies());
-
-//console.log(depo)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//OLD CODE
-
-
-// const instcmd = await Platform;
-
-// let LIST_OF_DEPENDENCIES = [];
-
-// try {
-//     const data = await fs.readFile( resolve('dep_list.json') , 'utf8');
-//     LIST_OF_DEPENDENCIES = JSON.parse(data);
-// } catch (err) {
-//     console.error(logSymbols.error, chalk.red(err));
-// }
-
-// class Dependencies {
-//     constructor() {
-//         this.depend = [];
-//         LIST_OF_DEPENDENCIES.forEach(({name, cmd, desc}) => {
-//             this.depend.push({
-//                 name: name,
-//                 commands: cmd,
-//                 desc: desc,
-//             })
-//         })
-//     }
-
-//     async test() {
-//         let installedlist = [];
-//         let uninstalledlist = [];
-//         let ins = []
-//         for (const lib of this.depend) {
-//             //console.log(lib);
-//             try {
-//                 await $`which ${lib.commands[0]}`; //{ stdio: 'ignore' };
-//                 //console.log($`which ${lib.commands[0]}`);
-//                 installedlist.push(chalk.green(lib.name + ", cmd: " + lib.commands.join(" ")+", desc: "+lib.desc));
-//             } catch (err) {
-//                 if (err instanceof ExecaError) {
-//                     uninstalledlist.push(chalk.red(lib.name + ", cmd: " + lib.commands.join(" ")+", desc: "+lib.desc));
-//                     ins.push(lib.name)
-//                 } else console.error(err);
-//             }
-//         }
-//         return { installedlist, uninstalledlist, ins };
-//     }
-
-//     async all(){
-//         const { installedlist, uninstalledlist, ins } = await this.test();
-//         //console.log(installedlist, uninstalledlist);
-//         console.log(`Installed:\n`+installedlist.join("\n")+`\nNot installed(required):\n`+uninstalledlist.join("\n"));
-//         if ( uninstalledlist.length > 0 ) {
-//             this.installDependencies( ins )
-//         }
-//     }
-
-//     async installed(){
-//         const { installedlist } = await this.test();
-//         console.log(`Installed:\n`+installedlist.join("\n"));
-//         //console.log(logSymbols.info, "hola");
-//     }
-
-//     async required(){
-//         const { uninstalledlist, ins } = await this.test();
-//         console.log(`Not installed(required):\n`+uninstalledlist.join("\n"));
-//         if ( uninstalledlist.length > 0 ) {
-//             this.installDependencies( ins )
-//         }
-//     }
-
-//     async installDependencies(libs) {
-//         const response = await Enquirer.prompt({
-//             type: "confirm",
-//             name: "install",
-//             message: "Do you want to "+chalk.green("install")+" dependencies?"
-//         })
-//         //console.log(response);
-//         if (response.install) {
-//             try {
-//                 const { installation: stdout } = await $(`${instcmd} install rar`, {shell: true});
-//                 //console.log(installation);
-//             } catch (error) {
-//                 console.log(error);
-//             }
-//         } else {
-//             console.log(logSymbols.warning, chalk.yellow("action cancelled, please install all the dependencies"));
-//         };
-//     };
-// };
-
-// export default new Dependencies();

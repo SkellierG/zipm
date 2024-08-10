@@ -1,9 +1,8 @@
 import { fetchData } from './getDependencies.js';
 import { update as cacheUpdate, getCmd } from './config/configCache.js';
-import { execa } from 'execa';
 import readline from 'readline';
+import { $ } from 'execa';
 import { exec } from 'child_process'
-
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -58,7 +57,7 @@ class InstallDependencies {
 
 			//const command = `${cacheCmd.data} install ${this.depList.uninstalled[i].name_install}`;
 			const command = `${cacheCmd.data} install -y 7zip`;
-			const { stdout } = await execa(command, {
+			const { stdout } = await exec(command, {
 				input: `${password}\n`,
 				stdio: 'inherit'
 			});
