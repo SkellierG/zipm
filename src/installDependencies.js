@@ -1,13 +1,38 @@
 import { fetchData } from './getDependencies.js';
-import { update as cacheUpdate, getCmd } from './config/configCache.js';
+import { update as cacheUpdate, getCmd, getOS } from './config/configCache.js';
 import readline from 'readline';
-import { $ } from 'execa';
-import { exec } from 'child_process'
+import { exec as  execNonPromise } from 'child_process';
+
+function exec(cmd, input) {
+	console.log('runinggggggg');
+	return new Promise((resolve, reject) => {
+			execNonPromise(cmd, { input }, (error, stdout, stderr) => {
+			if (error) return reject(error)
+			if (stderr) return reject(stderr)
+			resolve(stdout)
+		})
+	})
+}
+
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout
+// });
 
 const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
+	input: process.stdin,
+	output: process.stdout
 });
+
+rl.stdoutMuted = true;
+
+rl._writeToOutput = function _writeToOutput(stringToWrite) {
+	if (rl.stdoutMuted) {
+		rl.output.write("\x1B[2K\x1B[200D"+rl.query+"["+((rl.line.length%2==1)?"=-":"-=")+"]");
+	} else {
+		rl.output.write(stringToWrite);
+	}
+};
 
 await cacheUpdate();
 
@@ -47,20 +72,30 @@ class InstallDependencies {
 		}
 
 		try {
-			// const password = await await new Promise((resolve) => {
-			//     rl.question('Enter your password: ', (pass) => {
-			//       	rl.close();
-			//       	resolve(pass);
-			//     });
-			// });
-			const password = '';
-
-			//const command = `${cacheCmd.data} install ${this.depList.uninstalled[i].name_install}`;
-			const command = `${cacheCmd.data} install -y 7zip`;
-			const { stdout } = await exec(command, {
-				input: `${password}\n`,
-				stdio: 'inherit'
-			});
+			const isLinux = getOS().data === 'linux';
+			console.log(isLinux)
+			//const command = 'ls';
+			//const command = `sudo dnf install -y unrar`;
+			const command = `${cacheCmd.data} unrar`
+			if (isLinux) {
+				// rl.query = "Enter your SUDO password : ";
+				// const password = await new Promise((resolve) => {
+				// 	rl.question(rl.query, (pass) => {
+				// 		console.log('\n')
+				// 		rl.close();
+				// 		resolve(pass);
+				// 	});
+				// });
+				// console.log(password);
+				// console.log(cacheCmd.data);
+				const stdout = await exec(command)//, password)//, {
+				console.log('stdout:', stdout)
+				return stdout;
+			} else {
+				const stdout = await exec(command)
+				console.log('stdout:', stdout)
+				return stdout;
+			}
 
 		} catch (err) {
 			return { data: undefined, error: err }
@@ -71,4 +106,4 @@ class InstallDependencies {
 export default InstallDependencies;
 
 console.log(await InstallDependencies.install())
-console.log(JSON.stringify(await InstallDependencies.install()))
+//console.log(JSON.stringify(await InstallDependencies.install()))

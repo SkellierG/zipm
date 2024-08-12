@@ -37,7 +37,7 @@ class ConfigParser {
         if (entry.type === 'comment' || entry.type === 'space') {
           return entry.value;
         } else if (entry.type === 'entry') {
-          return `${entry.key.toUpperCase()}=${entry.value}`;
+            return `${entry.key.toUpperCase()}=${entry.value}`;
         }
         return '';
       }).join('\n');
@@ -58,19 +58,63 @@ class ConfigParser {
     }
 
     /**
-    * Updates configuration entries.
-    * @param {Array<object>} original - Original entries.
-    * @param {object} update - Key-value pairs to update.
-    * @returns {Array<object>} Updated entries.
-    */
+     * Merges updates into the original configuration entries.
+     * 
+     * This function updates the `original` array with the values from the `update` array. 
+     * If an entry of type `'entry'` in `update` has the same key as an entry in `original`, 
+     * the value in `original` is updated. Entries of type `'comment'` and `'space'` from 
+     * `update` are added if they are not already present in the `original` array. 
+     * New entries from `update` that are not present in `original` are also added.
+     *
+     * @param {Array<object>} original - The original array of configuration entries. 
+     * Each entry is an object with a `type` (e.g., `'entry'`, `'comment'`, or `'space'`) 
+     * and associated `key` and `value` if applicable.
+     * 
+     * @param {Array<object>} update - The array of updates to be merged. 
+     * Each entry is an object with a `type` (e.g., `'entry'`, `'comment'`, or `'space'`) 
+     * and associated `key` and `value` if applicable. For `'entry'` types, `key` is used 
+     * to match and update existing entries in `original`. For `'comment'` and `'space'` 
+     * types, these entries are added if they are not present in `original`.
+     *
+     * @returns {Array<object>} - The updated array of configuration entries. 
+     * The resulting array includes all entries from `original`, updated with values 
+     * from `update`, and any new entries from `update` that were not present in `original`. 
+     * Comments and spaces are preserved and added as needed.
+     */
     static mergeChanges(original, update) {
-        return original.map(entry => {
-        if (entry.type === 'entry' && update.hasOwnProperty(entry.key)) {
-            return { ...entry, value: update[entry.key] };
-        }
-        return entry;
+        const updateMap = new Map();
+        
+        update.forEach(entry => {
+            if (entry.type === 'entry') {
+                updateMap.set(entry.key, entry);
+            }
         });
+    
+        const resultArray = [];
+    
+        original.forEach(entry => {
+            if (entry.type === 'entry' && updateMap.has(entry.key)) {
+                resultArray.push({ ...entry, value: updateMap.get(entry.key).value });
+            } else if (entry.type === 'comment' || entry.type === 'space') {
+                resultArray.push(entry);
+            }
+        });
+    
+        update.forEach(entry => {
+            if (entry.type === 'entry' && !resultArray.some(e => e.key === entry.key)) {
+                resultArray.push(entry);
+            } else if ((entry.type === 'comment') && !resultArray.some(e => e.value === entry.value)) {
+                resultArray.push(entry);
+            } else if (entry.type === 'space') {
+                resultArray.push(entry)
+            }
+        });
+    
+        //console.log(JSON.stringify(resultArray, null, 2));
+        return resultArray;
     }
+    
+    
   }
   
 export default ConfigParser;
@@ -97,9 +141,27 @@ export const parseToString = (updated) => ConfigParser.parseToString(updated);
 export const getEntries = (parsed) => ConfigParser.getEntries(parsed);
 
 /**
-* Updates configuration entries.
-* @param {Array<object>} original - Original entries.
-* @param {object} update - Key-value pairs to update.
-* @returns {Array<object>} Updated entries.
-*/
+ * Merges updates into the original configuration entries.
+ * 
+ * This function updates the `original` array with the values from the `update` array. 
+ * If an entry of type `'entry'` in `update` has the same key as an entry in `original`, 
+ * the value in `original` is updated. Entries of type `'comment'` and `'space'` from 
+ * `update` are added if they are not already present in the `original` array. 
+ * New entries from `update` that are not present in `original` are also added.
+ *
+ * @param {Array<object>} original - The original array of configuration entries. 
+ * Each entry is an object with a `type` (e.g., `'entry'`, `'comment'`, or `'space'`) 
+ * and associated `key` and `value` if applicable.
+ * 
+ * @param {Array<object>} update - The array of updates to be merged. 
+ * Each entry is an object with a `type` (e.g., `'entry'`, `'comment'`, or `'space'`) 
+ * and associated `key` and `value` if applicable. For `'entry'` types, `key` is used 
+ * to match and update existing entries in `original`. For `'comment'` and `'space'` 
+ * types, these entries are added if they are not present in `original`.
+ *
+ * @returns {Array<object>} - The updated array of configuration entries. 
+ * The resulting array includes all entries from `original`, updated with values 
+ * from `update`, and any new entries from `update` that were not present in `original`. 
+ * Comments and spaces are preserved and added as needed.
+ */
 export const mergeChanges = (original, update) => ConfigParser.mergeChanges(original, update)

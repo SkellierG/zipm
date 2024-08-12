@@ -50,6 +50,10 @@ class ConfigFile {
    */
   async write(data) {
     try {
+      const configFileExists = fs.existsSync();
+      if (!configFileExists) {
+        await fs.promises.appendFile(this.fullpath, '')
+      }
       const originalData = await fs.promises.readFile(this.fullpath, 'utf8');
       const original = this.parser.stringToParse(originalData);
       const update = this.parser.mergeChanges(original, data);

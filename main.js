@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
-import fs from 'node:fs';
-import chalk from 'chalk';
-import Enquirer from 'enquirer';
+// import fs from 'node:fs';
+// import chalk from 'chalk';
+// import Enquirer from 'enquirer';
 import { Argument, Help, program } from 'commander';
-import Conf from 'conf';
+// import Conf from 'conf';
 import { $ } from 'execa';
-import figlet from 'figlet'
+// import figlet from 'figlet'
 import logSymbols from 'log-symbols';
-import ora from 'ora';
+// import ora from 'ora';
 
 //import Dependencies from './commands/dependencies.js';
 
