@@ -7,12 +7,23 @@
   "bin": {
     "zipm": "main.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SkellierG/zipm.git"
+  },
   "scripts": {
     "postinstall": "node setup.js",
     "start": "node main.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": ["cli", "zip", "gzip", "rar", "winrar", "compressor"],
+  "keywords": [
+    "cli",
+    "zip",
+    "gzip",
+    "rar",
+    "winrar",
+    "compressor"
+  ],
   "author": "SkellierG",
   "license": "MIT",
   "dependencies": {
@@ -22,6 +33,7 @@
     "enquirer": "2.4.1",
     "execa": "9.3.0",
     "figlet": "1.7.0",
+    "jsdoc": "4.0.3",
     "log-symbols": "6.0.0",
     "ora": "8.0.1",
     "winston": "3.13.0",
