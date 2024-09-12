@@ -15,7 +15,7 @@ class ConfigPlatform {
     }
 
     const allSuccessful = Object.values(results).every(result => !result.error);
-    
+
     return allSuccessful
       ? { data: results, error: undefined }
       : { data: undefined, error: results };
@@ -55,7 +55,6 @@ class ConfigPlatform {
 
 export default ConfigPlatform;
 
-// Exporting individual methods
 export const getOS = () => ConfigPlatform.getOS();
 export const getDisOS = () => ConfigPlatform.getDisOS();
 export const getCmd = () => ConfigPlatform.getCmd();

@@ -3,9 +3,6 @@ import path from 'path';
 import os from 'os';
 import configParser from './configParser.js';
 
-/**
- * Singleton class for managing configuration file operations.
- */
 class ConfigFile {
   constructor() {
     this.parser = configParser;
@@ -14,10 +11,6 @@ class ConfigFile {
     this.fullpath = path.join(this.dir, this.name);
   }
 
-  /**
-   * Retrieves the singleton instance of ConfigFile.
-   * @returns {ConfigFile} The singleton instance.
-   */
   static getInstance() {
     if (!ConfigFile.instance) {
       ConfigFile.instance = new ConfigFile();
@@ -25,12 +18,6 @@ class ConfigFile {
     return ConfigFile.instance;
   }
 
-  /**
-   * Reads and parses the configuration file.
-   * @returns {Promise<{ data: { [key: string]: string } | undefined, error: Error | undefined }>}
-   * - `data`: Key-value pairs from the configuration file.
-   * - `error`: Error object if reading fails.
-   */
   async read() {
     try {
       const readData = await fs.promises.readFile(this.fullpath, 'utf8');
@@ -41,13 +28,6 @@ class ConfigFile {
     }
   }
 
-  /**
-   * Writes data to the configuration file.
-   * @param {object} data - Key-value pairs to write.
-   * @returns {Promise<{ data: string | undefined, error: Error | undefined }>}
-   * - `data`: Updated configuration file as a string.
-   * - `error`: Error object if writing fails.
-   */
   async write(data) {
     try {
       const configFileExists = fs.existsSync();
@@ -64,14 +44,6 @@ class ConfigFile {
     }
   }
 
-  /**
-   * Writes data to the file.
-   * @param {string} data - Data to write.
-   * @returns {Promise<{ data: string | undefined, error: Error | undefined }>}
-   * - `data`: Written data if successful.
-   * - `error`: Error object if writing fails.
-   * @private
-   */
   async _hardWrite(data) {
     try {
       const FILE_EXISTS = fs.existsSync(this.dir);
@@ -87,24 +59,10 @@ class ConfigFile {
   }
 }
 
-// Create a singleton instance of ConfigFile
 const configFile = ConfigFile.getInstance();
 
 export default configFile;
 
-/**
- * Reads the configuration file.
- * @returns {Promise<{ data: { [key: string]: string } | undefined, error: Error | undefined }>}
- * - `data`: Key-value pairs from the configuration file.
- * - `error`: Error object if reading fails.
- */
 export const read = () => configFile.read();
 
-/**
- * Writes data to the configuration file.
- * @param {object} data - Key-value pairs to write.
- * @returns {Promise<{ data: string | undefined, error: Error | undefined }>}
- * - `data`: Updated configuration file as a string.
- * - `error`: Error object if writing fails.
- */
 export const write = (data) => configFile.write(data);

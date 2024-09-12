@@ -1,25 +1,15 @@
 import { write } from './configFile.js';
 import Init from './configInitInfo.js';
 
-/**
- * Class for setting up the configuration file with initial values.
- */
+
 class ConfigSetup {
 
-  /**
-   * Sets up the configuration file with default values fetched from Init.
-   * @returns {Promise<{ data: { InitData: object, writeData: string } | undefined, error: Error | undefined }>}
-   * - `data`: Contains `InitData` and the `writeData` string if successful.
-   * - `error`: Error object if setup fails.
-   */
   static async setup() {
-    // Fetch initial data from Init
     const { data: InitData, error: InitError } = await Init.fetchData();
     if (InitError) {
       return { data: undefined, error: InitError };
     }
 
-    // Convert the initial content into an array of objects
     const configEntries = [
       { type: 'comment', value: '# this is the default config file' },
       { type: 'comment', value: '# only change it if you know what' },
@@ -47,22 +37,15 @@ class ConfigSetup {
       { type: 'entry', key: 'dep_dir', value: InitData.dep_dir || 'null' }
     ];
 
-    // Write the configuration to the file
     const { data: writtenData, error: writeError } = await write(configEntries);
     if (writeError) {
       return { data: undefined, error: writeError };
     }
-    
+
     return { data: { InitData, writeData: writtenData }, error: undefined };
   }
 }
 
 export default ConfigSetup;
 
-/**
- * Sets up the configuration file with default values fetched from Init.
- * @returns {Promise<{ data: { InitData: object, writeData: string } | undefined, error: Error | undefined }>}
- * - `data`: Contains `InitData` and the `writeData` string if successful.
- * - `error`: Error object if setup fails.
- */
 export const setup = () => ConfigSetup.setup();
