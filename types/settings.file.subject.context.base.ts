@@ -18,18 +18,19 @@ export default class SettingsFileSubjectContext implements ISettingsFile {
     this.cache.update(content);
   }
 
-  public read(): object {
+  public read(): Record<string, any> {
     let rawData: string = readFileSync(this.path, 'utf8');
-    let parsedData = this.parser.rawToParsed(rawData);
+    let parsedData: ParsedEntry[] = this.parser.rawToParsed(rawData);
     return this.parser.parsedToJSON(parsedData);
   }
 
-  public write(newData: ParsedEntry): void {
-    let originalData = this.read();
-    let mergeData = this.parser.JSONToParsed(newData);
-    let finalParsedData = this.parser.mergeParsed(originalData, mergeData);
-    let finalJSONData = this.parser.parsedToJSON(finalParsedData);
-    let finalData = this.parser.parsedToRaw(finalParsedData);
+  public write(newData: Record<string, any>): void {
+    let originalRawData: string = readFileSync(this.path, 'utf8');
+    let originalParsedData: ParsedEntry[] = this.parser.rawToParsed(originalRawData);
+    let mergeData: ParsedEntry[] = this.parser.JSONToParsed(newData);
+    let finalParsedData: ParsedEntry[] = this.parser.mergeParsed(originalParsedData, mergeData);
+    let finalJSONData: Record<string, any> = this.parser.parsedToJSON(finalParsedData);
+    let finalData: string = this.parser.parsedToRaw(finalParsedData);
     writeFileSync(this.path, finalData, 'utf8');
     this.update(finalJSONData);
   }

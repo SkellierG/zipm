@@ -1,7 +1,7 @@
 import { ParsedEntry } from './parser.strategy.interface.js'
 
 export default interface ISettingsFileSubjectContext {
-  read(): object
+  read(): Record<string, any>
 
-  write(newData: ParsedEntry): void
+  write(newData: Record<string, any>): void
 }

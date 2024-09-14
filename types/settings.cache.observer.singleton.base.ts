@@ -17,7 +17,18 @@ export default abstract class SettingsCacheObserverSingleton implements ISetting
   }
 
   public getCached(key: string): any {
-    return this.cachedData[key];
+    const keyParts = key.split('.');
+    let result = this.cachedData;
+
+    for (let part of keyParts) {
+      if (result && Object.prototype.hasOwnProperty.call(result, part)) {
+        result = result[part];
+      } else {
+        return undefined;
+      }
+    }
+
+    return (typeof result === 'object' && result !== null) ? JSON.parse(JSON.stringify(result)) : result;
   }
 
   public getAll(): object {

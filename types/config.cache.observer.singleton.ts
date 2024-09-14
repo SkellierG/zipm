@@ -3,6 +3,8 @@ import SettingsCacheObserverSingleton from './settings.cache.observer.singleton.
 export default class ConfigCacheObserverSingleton extends SettingsCacheObserverSingleton {
   private static instance: ConfigCacheObserverSingleton;
 
+  private constructor() {super()}
+
   public static getInstance(): ConfigCacheObserverSingleton {
     if (!ConfigCacheObserverSingleton.instance) {
       ConfigCacheObserverSingleton.instance = new ConfigCacheObserverSingleton
