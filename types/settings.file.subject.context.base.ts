@@ -1,4 +1,4 @@
-import IParserStrategy from './interfaces/parser.strategy.interface.js'
+import IParserStrategy, { ParsedEntry } from './interfaces/parser.strategy.interface.js'
 import ISettingsCacheObserver from './interfaces/settings.cache.observer.interface.js'
 import ISettingsFile from './interfaces/settings.file.interface.js'
 import { readFileSync, writeFileSync } from 'fs'
@@ -24,9 +24,9 @@ export default class SettingsFileSubjectContext implements ISettingsFile {
     return this.parser.parsedToJSON(parsedData);
   }
 
-  public write(newData: object): void {
+  public write(newData: ParsedEntry): void {
     let originalData = this.read();
-    let mergeData = this.parser.JSONtoParsed(newData);
+    let mergeData = this.parser.JSONToParsed(newData);
     let finalParsedData = this.parser.mergeParsed(originalData, mergeData);
     let finalJSONData = this.parser.parsedToJSON(finalParsedData);
     let finalData = this.parser.parsedToRaw(finalParsedData);

@@ -2,9 +2,7 @@ import ISettingsCacheObserver from './interfaces/settings.cache.observer.interfa
 
 export default abstract class SettingsCacheObserverSingleton implements ISettingsCacheObserver {
   private cachedData: any;
-  private static instace: ISettingsCacheObserver;
-
-  abstract getInstance(): ISettingsCacheObserver;
+  private static instace: SettingsCacheObserverSingleton;
 
   // private static instance: SettingsCacheObserverSingleton;
   //
@@ -25,5 +23,4 @@ export default abstract class SettingsCacheObserverSingleton implements ISetting
   public getAll(): object {
     return this.cachedData;
   }
-
 }
