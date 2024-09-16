@@ -1,4 +1,4 @@
-import SettingsCacheObserverSingleton from './settings.cache.observer.singleton.base.js'
+import SettingsCacheObserverSingleton from './settings.cache.observer.singleton.base.ts'
 
 export default class ConfigCacheObserverSingleton extends SettingsCacheObserverSingleton {
   private static instance: ConfigCacheObserverSingleton;

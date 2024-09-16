@@ -1,16 +1,16 @@
 // settings.file.subject.context.base.test.ts
-import SettingsFileSubjectContext from '../settings.file.subject.context.base.js';
-import ConfParserStrategy from '../conf.parser.strategy.js';
-import ConfigCacheObserverSingleton from '../config.cache.observer.singleton.js';
-import PathUtilities from '../common/path.common.js';
-import { ParsedEntry } from '../interfaces/parser.strategy.interface.js'
+import SettingsFileSubjectContext from '../settings.file.subject.context.base.ts';
+import ConfParserStrategy from '../conf.parser.strategy.ts';
+import ConfigCacheObserverSingleton from '../config.cache.observer.singleton.ts';
+import PathUtilities from '../common/path.common.ts';
+import { ParsedEntry } from '../interfaces/parser.strategy.interface.ts'
 import { readFileSync, writeFileSync } from 'fs';
 
 // Mockeamos todas las dependencias
 jest.mock('fs');
-jest.mock('./conf.parser.strategy.js');
-jest.mock('./config.cache.observer.singleton.js');
-jest.mock('./common/path.common.js');
+jest.mock('../conf.parser.strategy.ts');
+jest.mock('../config.cache.observer.singleton.ts');
+jest.mock('../common/path.common.ts');
 
 describe('SettingsFileSubjectContext', () => {
   let configFileContext: SettingsFileSubjectContext;
@@ -42,10 +42,11 @@ describe('SettingsFileSubjectContext', () => {
 
   afterEach(() => {
     jest.clearAllMocks(); // Limpia los mocks después de cada test
+    jest.resetAllMocks()
   });
 
   test('debe leer y parsear correctamente el archivo de configuración', () => {
-    const mockRawData = 'mock raw data';
+    const mockRawData = 'KEY1=value1';
     const mockParsedData: ParsedEntry[] = [{ type: 'entry', key: 'key1', value: 'value1' }];
     const mockJSONData = { key1: 'value1' };
 
@@ -53,6 +54,7 @@ describe('SettingsFileSubjectContext', () => {
     (readFileSync as jest.Mock).mockReturnValue(mockRawData);
     mockParser.rawToParsed.mockReturnValue(mockParsedData);
     mockParser.parsedToJSON.mockReturnValue(mockJSONData);
+    mockCache.update(mockJSONData);
     mockCache.getAll.mockReturnValue({});
 
     // Ejecuta la función read
@@ -67,14 +69,14 @@ describe('SettingsFileSubjectContext', () => {
   });
 
   test('debe escribir y actualizar correctamente el archivo de configuración', () => {
-    const mockOriginalRawData = 'mock original raw data';
+    const mockOriginalRawData = 'KEY1=value1';
     const mockOriginalParsedData: ParsedEntry[] = [{ type: 'entry', key: 'key1', value: 'value1' }];
     const mockNewData = { key2: 'value2' };
     const mockMergeParsedData: ParsedEntry[] = [
       { type: 'entry', key: 'key1', value: 'value1' },
       { type: 'entry', key: 'key2', value: 'value2' },
     ];
-    const mockFinalRawData = 'mock final raw data';
+    const mockFinalRawData = 'KEY1=value1\nKEY2=value2';
     const mockFinalJSONData = { key1: 'value1', key2: 'value2' };
 
     // Mock de fs, parser y caché

@@ -1,4 +1,4 @@
-import ISettingsCacheObserver from './interfaces/settings.cache.observer.interface.js'
+import ISettingsCacheObserver from './interfaces/settings.cache.observer.interface.ts'
 
 export default abstract class SettingsCacheObserverSingleton implements ISettingsCacheObserver {
   private cachedData: any;

@@ -1,4 +1,4 @@
-import IParserStrategy, { ParsedEntry } from './interfaces/parser.strategy.interface.js'
+import IParserStrategy, { ParsedEntry } from './interfaces/parser.strategy.interface.ts'
 
 export default class ConfParserStrategy implements IParserStrategy {
 

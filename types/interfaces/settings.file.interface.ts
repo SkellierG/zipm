@@ -1,4 +1,4 @@
-import { ParsedEntry } from './parser.strategy.interface.js'
+import { ParsedEntry } from './parser.strategy.interface.ts'
 
 export default interface ISettingsFileSubjectContext {
   read(): Record<string, any>

@@ -1,6 +1,6 @@
-import IParserStrategy, { ParsedEntry } from './interfaces/parser.strategy.interface.js'
-import ISettingsCacheObserver from './interfaces/settings.cache.observer.interface.js'
-import ISettingsFile from './interfaces/settings.file.interface.js'
+import IParserStrategy, { ParsedEntry } from './interfaces/parser.strategy.interface.ts'
+import ISettingsCacheObserver from './interfaces/settings.cache.observer.interface.ts'
+import ISettingsFile from './interfaces/settings.file.interface.ts'
 import { readFileSync, writeFileSync } from 'fs'
 
 export default class SettingsFileSubjectContext implements ISettingsFile {

@@ -1,7 +1,7 @@
-import SettingsFileSubjectContext from './settings.file.subject.context.base.js'
-import ConfParserStrategy from './conf.parser.strategy.js'
-import ConfigCacheObserverSingleton from './config.cache.observer.singleton.js'
-import PathUtilities from './common/path.common.js'
+import SettingsFileSubjectContext from './settings.file.subject.context.base.ts'
+import ConfParserStrategy from './conf.parser.strategy.ts'
+import ConfigCacheObserverSingleton from './config.cache.observer.singleton.ts'
+import PathUtilities from './common/path.common.ts'
 
 const ConfigFileSubjectContext: SettingsFileSubjectContext = new SettingsFileSubjectContext(
   ConfigCacheObserverSingleton.getInstance(),
